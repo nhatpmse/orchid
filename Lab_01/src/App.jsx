@@ -1,13 +1,19 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from './components/Card';
 import Navbar from './components/Navbar';
-
+import './App.css';
+import './index.css';
 
 function App() {
+  const [orchids, setOrchids] = useState([]);
+  const [filteredOrchids, setFilteredOrchids] = useState([]);
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // Original data
   const data = [
     {
-
       "id": 1,
       "name": "Phalaenopsis amabilis",
       "origin": "Indonesia, Philippines",
@@ -17,7 +23,7 @@ function App() {
       "rating": 4.8,
       "numberOfLike": 1523,
       "category": "Phalaenopsis",
-      "image": "https://www.nature-and-garden.com/gardening/white-orchid-varieties-5-immaculate-varieties.html"
+      "image": "/img/Phalaenopsis amabilis .jpg"
     },
     {
       "id": 2,
@@ -29,7 +35,7 @@ function App() {
       "rating": 4.7,
       "numberOfLike": 1340,
       "category": "Cattleya",
-      "image": "https://example.com/images/cattleya_labiata.jpg"
+      "image": "/img/Cattleya labiata .jpg"
     },
     {
       "id": 3,
@@ -41,7 +47,7 @@ function App() {
       "rating": 4.5,
       "numberOfLike": 980,
       "category": "Dendrobium",
-      "image": "https://example.com/images/dendrobium_nobile.jpg"
+      "image": "/img/Dendrobium nobile .jpg"
     },
     {
       "id": 4,
@@ -53,7 +59,7 @@ function App() {
       "rating": 4.6,
       "numberOfLike": 876,
       "category": "Vanda",
-      "image": "https://example.com/images/vanda_coerulea.jpg"
+      "image": "/img/Vanda coerulea .jpg"
     },
     {
       "id": 5,
@@ -65,7 +71,7 @@ function App() {
       "rating": 4.9,
       "numberOfLike": 620,
       "category": "Paphiopedilum",
-      "image": "https://example.com/images/paphiopedilum_rothschildianum.jpg"
+      "image": "/img/Paphiopedilum rothschildianum .webp"
     },
     {
       "id": 6,
@@ -77,7 +83,7 @@ function App() {
       "rating": 4.5,
       "numberOfLike": 540,
       "category": "Miltoniopsis",
-      "image": "https://example.com/images/miltoniopsis_vexillaria.jpg"
+      "image": "/img/Miltoniopsis vexillaria .jpg"
     },
     {
       "id": 7,
@@ -89,7 +95,7 @@ function App() {
       "rating": 4.3,
       "numberOfLike": 430,
       "category": "Oncidium",
-      "image": "https://example.com/images/oncidium_sphacelatum.jpg"
+      "image": "/img/Oncidium sphacelatum .jpg"
     },
     {
       "id": 8,
@@ -101,7 +107,7 @@ function App() {
       "rating": 4.4,
       "numberOfLike": 390,
       "category": "Aerides",
-      "image": "https://example.com/images/aerides_odorata.jpg"
+      "image": "/img/Aerides odorata .jpg"
     },
     {
       "id": 9,
@@ -113,7 +119,7 @@ function App() {
       "rating": 4.2,
       "numberOfLike": 350,
       "category": "Cymbidium",
-      "image": "https://example.com/images/cymbidium_ensifolium.jpg"
+      "image": "/img/Cymbidium ensifolium .jpg"
     },
     {
       "id": 10,
@@ -125,7 +131,7 @@ function App() {
       "rating": 4.6,
       "numberOfLike": 780,
       "category": "Vanda",
-      "image": "https://example.com/images/vanda_tricolor.jpg"
+      "image": "/img/Vanda tricolor.webp"
     },
     {
       "id": 11,
@@ -137,7 +143,7 @@ function App() {
       "rating": 4.1,
       "numberOfLike": 310,
       "category": "Encyclia",
-      "image": "https://example.com/images/encyclia_tampensis.jpg"
+      "image": "/img/Encyclia tampensis .webp"
     },
     {
       "id": 12,
@@ -149,7 +155,7 @@ function App() {
       "rating": 4.0,
       "numberOfLike": 280,
       "category": "Brassavola",
-      "image": "https://example.com/images/brassavola_cucullata.jpg"
+      "image": "/img/Brassavola cucullata .jpg"
     },
     {
       "id": 13,
@@ -161,7 +167,7 @@ function App() {
       "rating": 4.3,
       "numberOfLike": 410,
       "category": "Odontoglossum",
-      "image": "https://example.com/images/odontoglossum_grande.jpg"
+      "image": "/img/Odontoglossum grande.jpg"
     },
     {
       "id": 14,
@@ -173,7 +179,7 @@ function App() {
       "rating": 4.2,
       "numberOfLike": 260,
       "category": "Masdevallia",
-      "image": "https://example.com/images/masdevallia_coccinea.jpg"
+      "image": "/img/Masdevallia coccinea .jpg"
     },
     {
       "id": 15,
@@ -185,7 +191,7 @@ function App() {
       "rating": 4.8,
       "numberOfLike": 430,
       "category": "Angraecum",
-      "image": "https://example.com/images/angraecum_sesquipedale.jpg"
+      "image": "/img/Angraecum sesquipedale.jpg"
     },
     {
       "id": 16,
@@ -197,19 +203,184 @@ function App() {
       "rating": 4.7,
       "numberOfLike": 370,
       "category": "Stanhopea",
-      "image": "https://example.com/images/stanhopea_tigrina.jpg"
+      "image": "/img/Stanhopea tigrina.webp"
     }
   ];
+
+  // Get unique categories
+  const categories = ['All', ...new Set(data.map(item => item.category))];
+
+  // Initialize data
+  useEffect(() => {
+    // Simulate loading
+    setTimeout(() => {
+      setOrchids(data);
+      setFilteredOrchids(data);
+      setLoading(false);
+    }, 800);
+  }, []);
+
+  // Filter by category
+  const handleCategoryFilter = (category) => {
+    setActiveCategory(category);
+    
+    if (category === 'All') {
+      setFilteredOrchids(
+        searchTerm 
+          ? orchids.filter(orchid => 
+              orchid.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              orchid.origin.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+          : orchids
+      );
+    } else {
+      setFilteredOrchids(
+        orchids.filter(orchid => 
+          orchid.category === category && 
+          (searchTerm 
+            ? orchid.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              orchid.origin.toLowerCase().includes(searchTerm.toLowerCase())
+            : true
+          )
+        )
+      );
+    }
+  };
+
+  // Handle search
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    if (activeCategory === 'All') {
+      setFilteredOrchids(
+        value 
+          ? orchids.filter(orchid => 
+              orchid.name.toLowerCase().includes(value.toLowerCase()) ||
+              orchid.origin.toLowerCase().includes(value.toLowerCase())
+            )
+          : orchids
+      );
+    } else {
+      setFilteredOrchids(
+        orchids.filter(orchid => 
+          orchid.category === activeCategory && 
+          (value 
+            ? orchid.name.toLowerCase().includes(value.toLowerCase()) ||
+              orchid.origin.toLowerCase().includes(value.toLowerCase())
+            : true
+          )
+        )
+      );
+    }
+  };
+
   return (
     <>
       <Navbar />
+      
+      <div className="app-container">
+        <div className="container">
+          {/* Header Section */}
+          <header className="app-header fade-in">
+            <h1 className="app-title">Discover Beautiful Orchids</h1>
+            <p className="app-description">
+              Explore our collection of rare and beautiful orchids from around the world.
+              Each orchid has been carefully cataloged with information about its origin, color, and special characteristics.
+            </p>
+          </header>
 
-      <div className='row'>
+          {/* Filters Section */}
+          <section className="filters-section fade-in">
+            <div className="row">
+              <div className="col-md-8">
+                <h5 className="filters-title">Browse by Category</h5>
+                <div className="category-pills">
+                  {categories.map(category => (
+                    <div 
+                      key={category}
+                      className={`category-pill ${activeCategory === category ? 'active' : ''}`}
+                      onClick={() => handleCategoryFilter(category)}
+                    >
+                      {category}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="col-md-4">
+                <h5 className="filters-title">Search</h5>
+                <div className="position-relative">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search by name or origin..."
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    style={{ 
+                      borderRadius: '20px',
+                      paddingLeft: '2.5rem',
+                      borderColor: 'var(--secondary-color)'
+                    }}
+                  />
+                  <i className="fas fa-search position-absolute" 
+                    style={{ 
+                      left: '0.75rem', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)', 
+                      color: 'var(--primary-color)' 
+                    }}
+                  ></i>
+                </div>
+              </div>
+            </div>
+          </section>
 
-        {data.map((i) => (
-          <Card key={i.id} pp={i} />
-        ))}
+          {/* Loading State */}
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border" role="status" style={{ color: 'var(--primary-color)' }}>
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p className="mt-3">Loading beautiful orchids...</p>
+            </div>
+          ) : (
+            <>
+              {/* Results Count */}
+              <div className="mb-4 fade-in">
+                <p className="text-muted">
+                  Showing {filteredOrchids.length} of {orchids.length} orchids
+                  {activeCategory !== 'All' && ` in category ${activeCategory}`}
+                  {searchTerm && ` matching "${searchTerm}"`}
+                </p>
+              </div>
 
+              {/* Orchids Grid */}
+              <div className="orchid-grid">
+                {filteredOrchids.length > 0 ? (
+                  filteredOrchids.map((orchid) => (
+                    <Card key={orchid.id} pp={orchid} />
+                  ))
+                ) : (
+                  <div className="col-12 text-center py-5">
+                    <i className="fas fa-search fa-3x mb-3" style={{ color: 'var(--secondary-color)' }}></i>
+                    <h4>No orchids found</h4>
+                    <p>Try changing your search criteria or browse all orchids.</p>
+                    <button 
+                      className="btn btn-primary mt-3"
+                      onClick={() => {
+                        setActiveCategory('All');
+                        setSearchTerm('');
+                        setFilteredOrchids(orchids);
+                      }}
+                    >
+                      View All Orchids
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </>
   );
